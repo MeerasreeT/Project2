@@ -1,49 +1,65 @@
 .student-dashboard {
-  padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to bottom right, #f3f4f7, #dfe9f3);
+  background: linear-gradient(to right, #e0f7fa, #fff);
   min-height: 100vh;
+  padding: 40px;
+  color: #333;
 }
 
 .welcome-box {
-  background-color: #ffffff;
-  padding: 20px;
-  margin-bottom: 20px;
+  background-color: #f1f8e9;
+  padding: 20px 30px;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  text-align: center;
+  animation: fadeIn 1.2s ease-in;
 }
 
 .welcome-box h2 {
-  margin: 0;
-  color: #2e4057;
-  font-size: 24px;
+  margin-bottom: 10px;
+  font-size: 28px;
+  color: #33691e;
 }
 
 .logout-button {
-  background-color: #ff4d4d;
+  background-color: #ff7043;
   color: white;
   border: none;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .logout-button:hover {
-  background-color: #cc0000;
+  background-color: #e64a19;
 }
 
 .student-info {
-  background-color: #ffffff;
+  background-color: #e8f5e9;
+  border-left: 6px solid #66bb6a;
   padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  animation: slideIn 1s ease;
 }
 
 .student-info p {
   font-size: 18px;
-  margin-bottom: 12px;
-  color: #333;
+  margin: 10px 0;
+}
+
+.student-info strong {
+  color: #2e7d32;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }

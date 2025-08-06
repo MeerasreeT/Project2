@@ -1,3 +1,4 @@
+import '../styles/home.css'
 const Home = () => (
   <div className="page-content">
     <h2>Empowering Student Records Management</h2>
