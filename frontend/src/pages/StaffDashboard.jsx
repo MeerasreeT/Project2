@@ -4,10 +4,10 @@ import '../styles/StaffDashboard.css';
 
 const StaffDashboard = () => {
   const [students, setStudents] = useState([]);
-  const [search, setSearch] = useState('');
-  const [viewStudent, setViewStudent] = useState(null);
-  const [editStudent, setEditStudent] = useState(null);
-  const [formData, setFormData] = useState({
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newStudent, setNewStudent] = useState({
     rollno: '',
     name: '',
     dob: '',
@@ -24,146 +24,125 @@ const StaffDashboard = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/students');
+      const res = await axios.get('http://localhost:5000/api/staff/students');
       setStudents(res.data);
     } catch (err) {
-      console.error('Failed to fetch students', err);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure to delete this student?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/students/${id}`);
-        fetchStudents();
-      } catch (err) {
-        console.error('Delete failed', err);
-      }
+      console.error('Error fetching students:', err);
     }
   };
 
   const handleView = (student) => {
-    setViewStudent(student);
+    setSelectedStudent(student);
   };
 
-  const handleEdit = (student) => {
-    setEditStudent(student);
-    setFormData({ ...student, dob: student.dob.substring(0, 10) }); // format DOB
-  };
-
-  const handleAdd = () => {
-    setEditStudent(null);
-    setFormData({
-      rollno: '',
-      name: '',
-      dob: '',
-      department: '',
-      place: '',
-      email: '',
-      phonenum: '',
-      bloodgroup: ''
-    });
-  };
-
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      if (editStudent) {
-        // Edit existing
-        await axios.put(`http://localhost:5000/api/students/${editStudent._id}`, formData);
-      } else {
-        // Add new
-        await axios.post('http://localhost:5000/api/students', formData);
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this student?')) {
+      try {
+        await axios.delete(`http://localhost:5000/api/staff/students/${id}`);
+        fetchStudents(); 
+      } catch (err) {
+        console.error('Delete failed:', err);
       }
-      fetchStudents();
-      setEditStudent(null);
-      setFormData({});
-    } catch (err) {
-      console.error('Form submission failed', err);
     }
   };
 
-  const filteredStudents = students.filter((stu) =>
-    stu.rollno.toLowerCase().includes(search.toLowerCase())
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/staff/students', newStudent);
+      setNewStudent({
+        rollno: '',
+        name: '',
+        dob: '',
+        department: '',
+        place: '',
+        email: '',
+        phonenum: '',
+        bloodgroup: ''
+      });
+      setShowAddForm(false);
+      fetchStudents();
+    } catch (err) {
+      console.error('Error adding student:', err);
+    }
+  };
+
+  const filteredStudents = students.filter(student =>
+    student.rollno.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="dashboard-container">
-      <h1>Staff Dashboard</h1>
+      <h2>Staff Dashboard</h2>
 
-      {viewStudent ? (
-        <div className="card-view">
-          <h3>Student Details</h3>
-          <p><strong>Roll No:</strong> {viewStudent.rollno}</p>
-          <p><strong>Name:</strong> {viewStudent.name}</p>
-          <p><strong>DOB:</strong> {new Date(viewStudent.dob).toLocaleDateString()}</p>
-          <p><strong>Department:</strong> {viewStudent.department}</p>
-          <p><strong>Place:</strong> {viewStudent.place}</p>
-          <p><strong>Email:</strong> {viewStudent.email}</p>
-          <p><strong>Phone:</strong> {viewStudent.phonenum}</p>
-          <p><strong>Blood Group:</strong> {viewStudent.bloodgroup}</p>
-          <button onClick={() => setViewStudent(null)}>Back to Table</button>
-        </div>
-      ) : editStudent || formData.rollno ? (
-        <form className="student-form" onSubmit={handleFormSubmit}>
-          <h3>{editStudent ? 'Edit Student' : 'Add Student'}</h3>
-          {Object.entries(formData).map(([key, value]) => (
+    
+      <div className="top-bar">
+        <input
+          type="text"
+          placeholder="Search by Roll No"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <button className="add-btn" onClick={() => setShowAddForm(!showAddForm)}>Add +</button>
+      </div>
+
+      
+      {showAddForm && (
+        <form className="add-form" onSubmit={handleAddStudent}>
+          {Object.entries(newStudent).map(([key, value]) => (
             <input
               key={key}
               type={key === 'dob' ? 'date' : 'text'}
               placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
               value={value}
-              onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+              onChange={(e) =>
+                setNewStudent({ ...newStudent, [key]: e.target.value })
+              }
               required
             />
           ))}
-          <button type="submit">{editStudent ? 'Update' : 'Add'}</button>
-          <button onClick={() => setFormData({})}>Cancel</button>
+          <button type="submit">Submit</button>
         </form>
-      ) : (
-        <>
-          <div className="top-bar">
-            <input
-              type="text"
-              placeholder="Search by Roll No"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button className="add-button" onClick={handleAdd}>+ Add Student</button>
-          </div>
+      )}
 
-          <table className="student-table">
-            <thead>
-              <tr>
-                <th>Roll No</th>
-                <th>Name</th>
-                <th>DOB</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStudents.length === 0 ? (
-                <tr>
-                  <td colSpan="4">No data found</td>
-                </tr>
-              ) : (
-                filteredStudents.map((stu) => (
-                  <tr key={stu._id}>
-                    <td>{stu.rollno}</td>
-                    <td>{stu.name}</td>
-                    <td>{new Date(stu.dob).toLocaleDateString()}</td>
-                    <td>
-                      <button onClick={() => handleView(stu)}>View</button>
-                      <button onClick={() => handleEdit(stu)}>Edit</button>
-                      <button onClick={() => handleDelete(stu._id)}>Delete</button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </>
+     
+      <table>
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Name</th>
+            <th>DOB</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredStudents.map((student) => (
+            <tr key={student._id}>
+              <td>{student.rollno}</td>
+              <td>{student.name}</td>
+              <td>{new Date(student.dob).toLocaleDateString()}</td>
+              <td>
+                <button onClick={() => handleView(student)}>View</button>
+                <button>Edit</button>
+                <button onClick={() => handleDelete(student._id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {selectedStudent && (
+        <div className="view-card">
+          <h3>Student Details</h3>
+          <p><strong>Roll No:</strong> {selectedStudent.rollno}</p>
+          <p><strong>Name:</strong> {selectedStudent.name}</p>
+          <p><strong>DOB:</strong> {new Date(selectedStudent.dob).toLocaleDateString()}</p>
+          <p><strong>Department:</strong> {selectedStudent.department}</p>
+          <p><strong>Phone:</strong> {selectedStudent.phonenum}</p>
+          <p><strong>Email:</strong> {selectedStudent.email}</p>
+          <p><strong>Blood Group:</strong> {selectedStudent.bloodgroup}</p>
+          <button onClick={() => setSelectedStudent(null)}>Close</button>
+        </div>
       )}
     </div>
   );

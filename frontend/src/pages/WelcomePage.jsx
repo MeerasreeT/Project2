@@ -1,109 +1,127 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/WelcomePage.css';
 import axios from 'axios';
+import '../styles/WelcomePage.css';
 
-function WelcomePage() {
-  const [isStaff, setIsStaff] = useState(false); // Toggle between student and staff login
+const WelcomePage = () => {
+  const [showStaffModal, setShowStaffModal] = useState(false);
+  const [showStudentModal, setShowStudentModal] = useState(false);
+
+  const [staffEmail, setStaffEmail] = useState('');
+  const [staffPassword, setStaffPassword] = useState('');
+
+  const [studentRoll, setStudentRoll] = useState('');
+  const [studentDOB, setStudentDOB] = useState('');
+
   const navigate = useNavigate();
-
-  const [staff, setStaff] = useState({ email: '', password: '' });
-  const [student, setStudent] = useState({ rollno: '', dob: '' });
 
   const handleStaffLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/staff/login', staff);
-      alert(res.data.message);
-      navigate('/staff-dashboard');
-    } catch (err) {
-      alert('Staff Login Failed');
-    }
-  };
-
-  const handleStudentLogin = async (e) => {
-    e.preventDefault();
-
-    const formattedDOB = new Date(student.dob)
-    try {
-      const res = await axios.post('http://localhost:5000/api/students/login',{
-        rollno: student.rollno,
-        dob: formattedDOB,
+      const res = await axios.post('http://localhost:5000/api/staff/login', {
+        email: staffEmail,
+        password: staffPassword,
       });
-      localStorage.setItem('studentData', JSON.stringify(res.data));
-      navigate('/student-dashboard');
-    } catch (err) {
-      alert('Student Login Failed');
+      if (res.status === 200) {
+        navigate('/staff-dashboard');
+      }
+    } catch (error) {
+      alert('Invalid Staff Credentials');
     }
   };
+ const handleStudentLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axios.post('http://localhost:5000/api/students/login', {
+      rollno: studentRoll,
+      dob: studentDOB
+    });
+    localStorage.setItem('student', JSON.stringify(res.data));
+    navigate('/student-dashboard');
+  } catch (err) {
+    alert('Invalid roll number or date of birth');
+  }
+};
 
+  
   return (
-    <div className={`container ${isStaff ? 'active' : ''}`} id="container">
-      {/* Student Login Form */}
-      {!isStaff && (
-        <div className="form-container sign-in">
-          <form onSubmit={handleStudentLogin} className="login-content">
-            <h1>Student Login</h1>
-            <input
-              type="text"
-              placeholder="Roll No"
-              value={student.rollno}
-              onChange={(e) => setStudent({ ...student, rollno: e.target.value })}
-              required
-            />
-            <input
-              type="date"
-              placeholder="Date of Birth"
-              value={student.dob}
-              onChange={(e) => setStudent({ ...student, dob: e.target.value })}
-              required
-            />
-            <button type="submit">Login</button>
-          </form>
+    <div className="welcome-page">
+      <nav className="navbar">
+        <h1 className="logo">Student Management System</h1>
+        <ul className="nav-links">
+          <li onClick={() => navigate('/home')}>Home</li>
+          <li onClick={() => navigate('/about')}>About</li>
+          <li onClick={() => navigate('/records')}>Records</li>
+          <li onClick={() => navigate('/contact')}>Contact</li>
+        </ul>
+        <div className="login-buttons">
+          <button onClick={() => setShowStaffModal(true)}>Staff Login</button>
+          <button onClick={() => setShowStudentModal(true)}>Student Login</button>
+        </div>
+      </nav>
+
+      {showStaffModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Staff Login</h2>
+            <form onSubmit={handleStaffLogin}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={staffEmail}
+                onChange={(e) => setStaffEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={staffPassword}
+                onChange={(e) => setStaffPassword(e.target.value)}
+                required
+              />
+              <button type="submit">Login</button>
+              <button type="button" onClick={() => setShowStaffModal(false)}>Cancel</button>
+            </form>
+          </div>
         </div>
       )}
 
-      {/* Staff Login Form */}
-      {isStaff && (
-        <div className="form-container sign-up">
-          <form onSubmit={handleStaffLogin} className="login-content">
-            <h1>Staff Login</h1>
-            <input
-              type="email"
-              placeholder="Email"
-              value={staff.email}
-              onChange={(e) => setStaff({ ...staff, email: e.target.value })}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={staff.password}
-              onChange={(e) => setStaff({ ...staff, password: e.target.value })}
-              required
-            />
-            <button type="submit">Login</button>
-          </form>
+      
+      {showStudentModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Student Login</h2>
+            <form onSubmit={handleStudentLogin}>
+              <input
+                type="text"
+                placeholder="Roll Number"
+                value={studentRoll}
+                onChange={(e) => setStudentRoll(e.target.value)}
+                required
+              />
+              <input
+                type="date"
+                value={studentDOB}
+                onChange={(e) => setStudentDOB(e.target.value)}
+                required
+              />
+              <button type="submit">Login</button>
+              <button type="button" onClick={() => setShowStudentModal(false)}>Cancel</button>
+            </form>
+          </div>
         </div>
       )}
 
-      {/* Toggle Panel */}
-      <div className="toggle-container">
-        <div className="toggle">
-          <div className="toggle-panel toggle-left">
-            <h1>Welcome to Student Management System</h1>
-            <p>Are you a student?</p>
-            <button className="hidden" onClick={() => setIsStaff(false)}>Student</button>
-          </div>
-          <div className="toggle-panel toggle-right">
-            <h1>Welcome to Student Management System</h1>
-            <p>Are you a staff?</p>
-            <button className="hidden" onClick={() => setIsStaff(true)}>Staff</button>
-          </div>
-        </div>
+      <div className="hero-section">
+        <h2>Welcome to the Student Management System</h2>
+        <p>Efficient | Secure | Easy to Use</p>
       </div>
+
+      <footer className="footer">
+        <p>© 2025 Student Management System | All rights reserved.</p>
+      </footer>
     </div>
   );
-}
+};
 
 export default WelcomePage;

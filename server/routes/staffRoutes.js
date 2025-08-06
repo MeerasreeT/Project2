@@ -4,9 +4,9 @@ import { staffLogin, getAllStudents, createStudent, updateStudent, deleteStudent
 const router = express.Router();
 
 router.post('/login', staffLogin)
-router.post('/students', getAllStudents)
+router.get('/students', getAllStudents)
 router.post('/students', createStudent)
-router.post('/students/:id', updateStudent)
-router.post('/students/:id', deleteStudent)
+router.put('/students/:id', updateStudent)
+router.delete('/students/:id', deleteStudent)
 
 export default router;
