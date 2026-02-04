@@ -6,8 +6,10 @@ const StaffDashboard = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newStudent, setNewStudent] = useState({
+  const [showForm, setShowForm] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+
+  const [formData, setFormData] = useState({
     rollno: '',
     name: '',
     dob: '',
@@ -23,59 +25,65 @@ const StaffDashboard = () => {
   }, []);
 
   const fetchStudents = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/api/staff/students');
-      setStudents(res.data);
-    } catch (err) {
-      console.error('Error fetching students:', err);
-    }
+    const res = await axios.get('http://localhost:5000/api/staff/students');
+    setStudents(res.data);
   };
 
-  const handleView = (student) => {
-    setSelectedStudent(student);
+  const handleAdd = () => {
+    setIsEdit(false);
+    setFormData({
+      rollno: '',
+      name: '',
+      dob: '',
+      department: '',
+      place: '',
+      email: '',
+      phonenum: '',
+      bloodgroup: ''
+    });
+    setShowForm(true);
+  };
+
+  const handleEdit = (student) => {
+    setIsEdit(true);
+    setFormData(student);
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isEdit) {
+      await axios.put(
+        `http://localhost:5000/api/staff/students/${formData._id}`,
+        formData
+      );
+    } else {
+      await axios.post(
+        'http://localhost:5000/api/staff/students',
+        formData
+      );
+    }
+    setShowForm(false);
+    fetchStudents();
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this student?')) {
-      try {
-        await axios.delete(`http://localhost:5000/api/staff/students/${id}`);
-        fetchStudents(); 
-      } catch (err) {
-        console.error('Delete failed:', err);
-      }
-    }
-  };
-
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post('http://localhost:5000/api/staff/students', newStudent);
-      setNewStudent({
-        rollno: '',
-        name: '',
-        dob: '',
-        department: '',
-        place: '',
-        email: '',
-        phonenum: '',
-        bloodgroup: ''
-      });
-      setShowAddForm(false);
+    if (window.confirm('Delete student?')) {
+      await axios.delete(
+        `http://localhost:5000/api/staff/students/${id}`
+      );
       fetchStudents();
-    } catch (err) {
-      console.error('Error adding student:', err);
     }
   };
 
-  const filteredStudents = students.filter(student =>
-    student.rollno.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStudents = students.filter(s =>
+    s.rollno.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="dashboard-container">
+    <div className="staff-dashboard">
       <h2>Staff Dashboard</h2>
 
-    
       <div className="top-bar">
         <input
           type="text"
@@ -83,29 +91,9 @@ const StaffDashboard = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button className="add-btn" onClick={() => setShowAddForm(!showAddForm)}>Add +</button>
+        <button onClick={handleAdd}>Add Student</button>
       </div>
 
-      
-      {showAddForm && (
-        <form className="add-form" onSubmit={handleAddStudent}>
-          {Object.entries(newStudent).map(([key, value]) => (
-            <input
-              key={key}
-              type={key === 'dob' ? 'date' : 'text'}
-              placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-              value={value}
-              onChange={(e) =>
-                setNewStudent({ ...newStudent, [key]: e.target.value })
-              }
-              required
-            />
-          ))}
-          <button type="submit">Submit</button>
-        </form>
-      )}
-
-     
       <table>
         <thead>
           <tr>
@@ -116,15 +104,15 @@ const StaffDashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredStudents.map((student) => (
+          {filteredStudents.map(student => (
             <tr key={student._id}>
               <td>{student.rollno}</td>
               <td>{student.name}</td>
               <td>{new Date(student.dob).toLocaleDateString()}</td>
               <td>
-                <button onClick={() => handleView(student)}>View</button>
-                <button>Edit</button>
-                <button onClick={() => handleDelete(student._id)}>Delete</button>
+                <button onClick={() => setSelectedStudent(student)}>View</button>
+                <button onClick={() => handleEdit(student)}>Edit</button>
+                <button className="danger" onClick={() => handleDelete(student._id)}>Delete</button>
               </td>
             </tr>
           ))}
@@ -132,16 +120,41 @@ const StaffDashboard = () => {
       </table>
 
       {selectedStudent && (
-        <div className="view-card">
+        <div className="glass-card">
           <h3>Student Details</h3>
-          <p><strong>Roll No:</strong> {selectedStudent.rollno}</p>
-          <p><strong>Name:</strong> {selectedStudent.name}</p>
-          <p><strong>DOB:</strong> {new Date(selectedStudent.dob).toLocaleDateString()}</p>
-          <p><strong>Department:</strong> {selectedStudent.department}</p>
-          <p><strong>Phone:</strong> {selectedStudent.phonenum}</p>
-          <p><strong>Email:</strong> {selectedStudent.email}</p>
-          <p><strong>Blood Group:</strong> {selectedStudent.bloodgroup}</p>
+          <p><b>Roll No:</b> {selectedStudent.rollno}</p>
+          <p><b>Name:</b> {selectedStudent.name}</p>
+          <p><b>Department:</b> {selectedStudent.department}</p>
+          <p><b>Email:</b> {selectedStudent.email}</p>
+          <p><b>Phone:</b> {selectedStudent.phonenum}</p>
+          <p><b>Blood Group:</b> {selectedStudent.bloodgroup}</p>
           <button onClick={() => setSelectedStudent(null)}>Close</button>
+        </div>
+      )}
+
+      {showForm && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>{isEdit ? 'Edit Student' : 'Add Student'}</h3>
+            <form onSubmit={handleSubmit}>
+              {Object.keys(formData).map(key =>
+                key !== '_id' && (
+                  <input
+                    key={key}
+                    type={key === 'dob' ? 'date' : 'text'}
+                    placeholder={key.toUpperCase()}
+                    value={formData[key]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [key]: e.target.value })
+                    }
+                    required
+                  />
+                )
+              )}
+              <button type="submit">Save</button>
+              <button type="button" className="danger" onClick={() => setShowForm(false)}>Cancel</button>
+            </form>
+          </div>
         </div>
       )}
     </div>

@@ -1,40 +1,72 @@
-.about-container {
-  padding: 40px;
-  background: linear-gradient(to bottom right, #e0eafc, #cfdef3);
-  border-radius: 10px;
-  width: 80%;
-  margin: 60px auto;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+.about-page {
+  min-height: 100vh;
+  padding: 60px 40px;
+  background: linear-gradient(135deg, #141e30, #243b55);
+  color: white;
   text-align: center;
 }
 
 .about-title {
   font-size: 2.5rem;
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 50px;
+  animation: glowText 2s ease-in-out infinite alternate;
 }
 
-.about-typing {
-  font-size: 1.2rem;
-  color: #444;
-  border-right: 2px solid #333;
-  white-space: nowrap;
-  overflow: hidden;
-  width: 0;
-  animation: typing 4s steps(90, end) forwards, blink 0.7s step-end infinite;
+/* 🔥 FIXED 2x2 GRID */
+.about-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* ALWAYS 2 PER ROW */
+  gap: 30px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-@keyframes typing {
+.about-card {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transition: 0.3s ease;
+}
+
+.about-card:hover {
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.about-card h3 {
+  font-size: 1.35rem;
+  margin-bottom: 12px;
+  color: #6dd5fa;
+}
+
+.about-card p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Animations */
+@keyframes glowText {
   from {
-    width: 0;
+    text-shadow: 0 0 10px #00c6ff, 0 0 20px #0072ff;
   }
   to {
-    width: 100%;
+    text-shadow: 0 0 20px #6dd5fa, 0 0 40px #0072ff;
   }
 }
 
-@keyframes blink {
-  50% {
-    border-color: transparent;
+/* 📱 Mobile Responsive */
+@media (max-width: 768px) {
+  .about-cards {
+    grid-template-columns: 1fr; /* Stack nicely on mobile */
   }
 }
