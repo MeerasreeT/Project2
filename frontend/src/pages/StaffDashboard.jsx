@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/StaffDashboard.css';
 
+const BACKEND_URL = 'https://project2-backend.onrender.com/api/staff/students';
+
 const StaffDashboard = () => {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -25,8 +27,12 @@ const StaffDashboard = () => {
   }, []);
 
   const fetchStudents = async () => {
-    const res = await axios.get('http://localhost:5000/api/staff/students');
-    setStudents(res.data);
+    try {
+      const res = await axios.get(BACKEND_URL);
+      setStudents(res.data);
+    } catch (err) {
+      console.error('Error fetching students:', err);
+    }
   };
 
   const handleAdd = () => {
@@ -52,32 +58,34 @@ const StaffDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isEdit) {
-      await axios.put(
-        `http://localhost:5000/api/staff/students/${formData._id}`,
-        formData
-      );
-    } else {
-      await axios.post(
-        'http://localhost:5000/api/staff/students',
-        formData
-      );
+    try {
+      if (isEdit) {
+        await axios.put(`${BACKEND_URL}/${formData._id}`, formData);
+      } else {
+        await axios.post(BACKEND_URL, formData);
+      }
+      setShowForm(false);
+      fetchStudents();
+    } catch (err) {
+      console.error('Error saving student:', err);
     }
-    setShowForm(false);
-    fetchStudents();
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete student?')) {
-      await axios.delete(
-        `http://localhost:5000/api/staff/students/${id}`
-      );
-      fetchStudents();
+    if (window.confirm('Are you sure you want to delete this student?')) {
+      try {
+        await axios.delete(`${BACKEND_URL}/${id}`);
+        fetchStudents();
+      } catch (err) {
+        console.error('Error deleting student:', err);
+      }
     }
   };
 
-  const filteredStudents = students.filter(s =>
-    s.rollno.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStudents = students.filter(
+    (s) =>
+      s.rollno.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -87,7 +95,7 @@ const StaffDashboard = () => {
       <div className="top-bar">
         <input
           type="text"
-          placeholder="Search by Roll No"
+          placeholder="Search by Roll No or Name"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -120,21 +128,25 @@ const StaffDashboard = () => {
       </table>
 
       {selectedStudent && (
-        <div className="glass-card">
-          <h3>Student Details</h3>
-          <p><b>Roll No:</b> {selectedStudent.rollno}</p>
-          <p><b>Name:</b> {selectedStudent.name}</p>
-          <p><b>Department:</b> {selectedStudent.department}</p>
-          <p><b>Email:</b> {selectedStudent.email}</p>
-          <p><b>Phone:</b> {selectedStudent.phonenum}</p>
-          <p><b>Blood Group:</b> {selectedStudent.bloodgroup}</p>
-          <button onClick={() => setSelectedStudent(null)}>Close</button>
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h3>{selectedStudent.name}'s Details</h3>
+            <p><b>Roll No:</b> {selectedStudent.rollno}</p>
+            <p><b>Name:</b> {selectedStudent.name}</p>
+            <p><b>DOB:</b> {new Date(selectedStudent.dob).toLocaleDateString()}</p>
+            <p><b>Department:</b> {selectedStudent.department}</p>
+            <p><b>Place:</b> {selectedStudent.place}</p>
+            <p><b>Email:</b> {selectedStudent.email}</p>
+            <p><b>Phone:</b> {selectedStudent.phonenum}</p>
+            <p><b>Blood Group:</b> {selectedStudent.bloodgroup}</p>
+            <button onClick={() => setSelectedStudent(null)}>Close</button>
+          </div>
         </div>
       )}
 
       {showForm && (
         <div className="modal-overlay">
-          <div className="modal">
+          <div className="modal-card">
             <h3>{isEdit ? 'Edit Student' : 'Add Student'}</h3>
             <form onSubmit={handleSubmit}>
               {Object.keys(formData).map(key =>
@@ -151,8 +163,10 @@ const StaffDashboard = () => {
                   />
                 )
               )}
-              <button type="submit">Save</button>
-              <button type="button" className="danger" onClick={() => setShowForm(false)}>Cancel</button>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button type="submit">{isEdit ? 'Update' : 'Save'}</button>
+                <button type="button" className="danger" onClick={() => setShowForm(false)}>Cancel</button>
+              </div>
             </form>
           </div>
         </div>

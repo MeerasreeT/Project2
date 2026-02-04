@@ -22,16 +22,12 @@ const StudentDashboard = () => {
 
   return (
     <div className="student-dashboard">
-
-  
       <div className="welcome-section">
         <h2>Hi {student.name}, Welcome Back!</h2>
-        <button onClick={handleLogout}>Logout</button>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
 
-  
       <div className="dashboard-layout">
-
         <div className="card profile-card">
           <h3>Profile</h3>
           <p><strong>Roll No:</strong> {student.rollno}</p>
@@ -49,7 +45,7 @@ const StudentDashboard = () => {
           <div className="card">
             <h4>Attendance</h4>
             <p>Overall: 86%</p>
-            <p>Status: Good </p>
+            <p>Status: Good</p>
           </div>
 
           <div className="card">
@@ -63,7 +59,6 @@ const StudentDashboard = () => {
             <p>Submitted: 4</p>
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -15,17 +15,19 @@ const WelcomePage = () => {
 
   const navigate = useNavigate();
 
+  const BACKEND_URL = 'https://project2-backend.onrender.com';
+
   const handleStaffLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/staff/login', {
+      const res = await axios.post(`${BACKEND_URL}/api/staff/login`, {
         email: staffEmail,
         password: staffPassword,
       });
       if (res.status === 200) {
         navigate('/staff-dashboard');
       }
-    } catch {
+    } catch (err) {
       alert('Invalid Staff Credentials');
     }
   };
@@ -33,13 +35,13 @@ const WelcomePage = () => {
   const handleStudentLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/students/login', {
+      const res = await axios.post(`${BACKEND_URL}/api/students/login`, {
         rollno: studentRoll,
         dob: studentDOB,
       });
       localStorage.setItem('student', JSON.stringify(res.data));
       navigate('/student-dashboard');
-    } catch {
+    } catch (err) {
       alert('Invalid Roll Number or DOB');
     }
   };
@@ -76,8 +78,20 @@ const WelcomePage = () => {
           <div className="modal">
             <h3>Staff Login</h3>
             <form onSubmit={handleStaffLogin}>
-              <input type="email" placeholder="Email" value={staffEmail} onChange={(e) => setStaffEmail(e.target.value)} required />
-              <input type="password" placeholder="Password" value={staffPassword} onChange={(e) => setStaffPassword(e.target.value)} required />
+              <input
+                type="email"
+                placeholder="Email"
+                value={staffEmail}
+                onChange={(e) => setStaffEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={staffPassword}
+                onChange={(e) => setStaffPassword(e.target.value)}
+                required
+              />
               <button type="submit">Login</button>
               <button type="button" className="danger" onClick={() => setShowStaffModal(false)}>Cancel</button>
             </form>
@@ -90,8 +104,19 @@ const WelcomePage = () => {
           <div className="modal">
             <h3>Student Login</h3>
             <form onSubmit={handleStudentLogin}>
-              <input type="text" placeholder="Roll Number" value={studentRoll} onChange={(e) => setStudentRoll(e.target.value)} required />
-              <input type="date" value={studentDOB} onChange={(e) => setStudentDOB(e.target.value)} required />
+              <input
+                type="text"
+                placeholder="Roll Number"
+                value={studentRoll}
+                onChange={(e) => setStudentRoll(e.target.value)}
+                required
+              />
+              <input
+                type="date"
+                value={studentDOB}
+                onChange={(e) => setStudentDOB(e.target.value)}
+                required
+              />
               <button type="submit">Login</button>
               <button type="button" className="danger" onClick={() => setShowStudentModal(false)}>Cancel</button>
             </form>

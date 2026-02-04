@@ -5,7 +5,7 @@ const Records = () => {
   const [students, setStudents] = useState([
     { rollno: '101', name: 'Meera', department: 'CS', dob: '2002-05-10', place: 'Coimbatore', email: 'meera@test.com', phonenum: '9876543210', bloodgroup: 'B+' },
     { rollno: '102', name: 'Arun', department: 'IT', dob: '2001-11-21', place: 'Chennai', email: 'arun@test.com', phonenum: '9876501234', bloodgroup: 'O+' }
-  ]); // sample data
+  ]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
 
